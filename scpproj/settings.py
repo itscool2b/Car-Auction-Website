@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 import dj_database_url
+import os
+from dotenv import load_dotenv
+load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -77,9 +80,8 @@ WSGI_APPLICATION = "scpproj.wsgi.application"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    "default": dj_database_url.config(
-        default="postgresql://scpragappdb_user:BMH1xuSmJFrsNqN97sEEMLUNbF25d1Vp@dpg-cqc0vao8fa8c73cj9e30-a/scpragappdb",
-        conn_max_age=600
+    'default': dj_database_url.config(
+        default=os.getenv('DATABASE_URL')
     )
 }
 
@@ -123,6 +125,9 @@ STATIC_URL = "/static/"
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field

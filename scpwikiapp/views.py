@@ -1,30 +1,22 @@
 import os
 import uuid
 from dotenv import load_dotenv
-
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login as auth_login, authenticate
 from django.contrib.auth.decorators import login_required
-
 from .models import ChatSession, ChatMessage, PDFDocument
 from .forms import SignUpForm, CustomLoginForm
-
 from langchain.chat_models import ChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.prompts import PromptTemplate
 from langchain.memory import ConversationBufferMemory
 from langchain.agents import Tool, initialize_agent
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-import pinecone
-from langchain.vectorstores import Pinecone
 import openai
-from pdfminer.high_level import extract_text
+from .faiss_index import index, document_store
 
 load_dotenv()
 
-pinecone.init(api_key=os.getenv('PINECONE_API_KEY'), environment='us-east-1')
-index_name = "scpragapp"
-pinecone_index = pinecone.Index(index_name)
+
 
 def signup(request):
     if request.method == 'POST':
@@ -90,23 +82,20 @@ class OpenAIChatLLM:
             **kwargs
         )
         return response['choices'][0]['message']['content']
+    
+
+def get_relevant_documents(query):
+
+    openai_api_key = os.getenv('OPENAI_API_KEY')
+    embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
+    query_embedding = embeddings.embed_query(query).reshape(1, -1)
+
+    D, I = index.search(query_embedding, k=5)
+    results = [document_store[i] for i in I[0]]
+    return [result['content'] for result in results]
+
 
 def ragapp(question):
-    openai_api_key = os.getenv('OPENAI_API_KEY')
-    pinecone_api_key = os.getenv('PINECONE_API_KEY')
-    pinecone_environment = 'us-east-1'
-    index_name = "scpragapp"
-
-    def get_relevant_documents(query):
-        pinecone.init(api_key=pinecone_api_key, environment=pinecone_environment)
-        pinecone_index = pinecone.Index(index_name)
-        embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
-        vectorstore = Pinecone(pinecone_index, embeddings)
-
-        query_embedding = embeddings.embed_query(query)
-        results = vectorstore.similarity_search(query_embedding, k=5)
-        return [result.metadata['content'] for result in results]
-
     info_prompt_template = PromptTemplate.from_template("""
     You are an expert on the game SCP: Secret Laboratory. Answer the following question based on the game:
 
@@ -114,6 +103,7 @@ def ragapp(question):
     Answer:
     """)
 
+    openai_api_key = os.getenv('OPENAI_API_KEY')
     llm = OpenAIChatLLM(api_key=openai_api_key)
     memory = ConversationBufferMemory()
     tools = [
