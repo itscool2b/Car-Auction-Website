@@ -32,24 +32,24 @@ class PDFDocument(models.Model):
         return self.title
 
     def save(self, *args, **kwargs):
-        # Call the original save method to ensure the file is saved
+       
         super().save(*args, **kwargs)
         
-        # Extract text from the PDF file
+    
         file_path = self.file.path
         text = extract_text(file_path)
         
-        # Split text into chunks
+      
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
         chunks = text_splitter.split_text(text)
         
-        # Prepare documents for embedding
+        
         documents = [{"page_content": chunk} for chunk in chunks]
 
-        # Get embeddings and add to FAISS
+        
         openai_api_key = os.getenv('OPENAI_API_KEY')
         embeddings = OpenAIEmbeddings(api_key=openai_api_key)
         doc_embeddings = [embeddings.embed_query(doc["page_content"]) for doc in documents]
 
-        # Add documents and embeddings to FAISS index and document store
+        
         add_documents_to_faiss(documents, doc_embeddings)

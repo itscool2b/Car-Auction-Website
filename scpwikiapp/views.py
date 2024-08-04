@@ -16,7 +16,8 @@ from .faiss_index import index, document_store
 
 load_dotenv()
 
-
+def loginpage(request):
+    return render(request,'login.html')
 
 def signup(request):
     if request.method == 'POST':
@@ -28,7 +29,7 @@ def signup(request):
             user = authenticate(username=username, password=password)
             if user is not None:
                 auth_login(request, user)
-                return redirect('home')  # Redirect to a home page or dashboard
+                return redirect('home')  
     else:
         form = SignUpForm()
     return render(request, 'signup.html', {'form': form})
@@ -42,9 +43,10 @@ def login(request):
             user = authenticate(username=username, password=password)
             if user is not None:
                 auth_login(request, user)
-                return redirect('home')  # Redirect to a home page or dashboard
+                return redirect('home')
     else:
         form = CustomLoginForm()
+    
     return render(request, 'login.html', {'form': form})
 
 @login_required
@@ -92,7 +94,7 @@ def get_relevant_documents(query):
 
     D, I = index.search(query_embedding, k=5)
     results = [document_store[i] for i in I[0]]
-    return [result['content'] for result in results]
+    return [result['page_content'] for result in results]
 
 
 def ragapp(question):

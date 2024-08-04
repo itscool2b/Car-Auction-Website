@@ -1,7 +1,7 @@
 import faiss
 import numpy as np
-# Initialize FAISS index
-index = faiss.IndexFlatL2(1536)  # 1536 is the dimension of the embeddings
+
+index = faiss.IndexFlatL2(1536)  
 document_store = []
 
 def add_documents_to_faiss(documents,embeddings):
