@@ -212,7 +212,7 @@
         <div class="login-view">
             <form method="post" class="log-in" autocomplete="off">
                 {% csrf_token %}
-                <h4>DreamSteam <span>Roadmap Designer</span></h4>
+                <h4>Car <span>Auctions</span></h4>
                 <p>Login to create a roadmap</p>
                 <div class="floating-label">
                     {{ form.username.label_tag }}
@@ -246,7 +246,7 @@
                     </div>
                 </div>
                 <button type="submit">Log in</button>
-                <a href="https://codepen.io/elujambio/pen/yjwzGP" class="discrete" target="_blank">Basic version</a>
+                <a href="{% url 'signup' %}" class="discrete" target="_blank">Signup</a>
             </form>
         </div>
     </div>
