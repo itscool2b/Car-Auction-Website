@@ -13,6 +13,7 @@ from langchain.memory import ConversationBufferMemory
 from langchain.agents import Tool, initialize_agent
 import openai
 from .faiss_index import index, document_store
+from openai import OpenAI
 
 load_dotenv()
 
@@ -71,22 +72,20 @@ def handle_chat(request, session_id):
             return redirect('chat', session_id=session_id)
     return render(request, 'chat.html', {'session_id': session_id, 'messages': chat_session.messages.all()})
 
-class OpenAIChatLLM:
-    def __init__(self, api_key, model="gpt-4o-mini"):
-        self.api_key = api_key
-        self.model = model
-        openai.api_key = api_key
 
-    def call(self, prompt, **kwargs):
-        response = openai.ChatCompletion.create(
-            model=self.model,
-            messages=[
-                {"role": "system", "content": "You are an expert on the game SCP: Secret Laboratory."},
-                {"role": "user", "content": prompt}
-            ],
-            **kwargs
-        )
-        return response['choices'][0]['message']['content']
+def gpt4o(api_key, prompt, model='gpt-4o', **kwargs):
+    openai.api_key = api_key
+    response = openai.ChatCompletion.create(
+        model=model,
+        messages=[
+            {"role": "system", "content": "Think as if you are talking to a little kid. Be insightful while being aware they are kids. Instead of giving an actual roadmap, think of activities they could do in their childhood. Not exactly building paper airplanes, but activities that are common among kids and connected to what they want to be. Don’t be too childish, like playing with toys. Really focus on the foundation of STEAM."},
+            {"role": "user", "content": prompt}
+        ],
+        **kwargs
+    )
+    
+    message = response['choices'][0]['message']['content']
+    return message
     
 
 def get_relevant_documents(query):
@@ -101,15 +100,8 @@ def get_relevant_documents(query):
 
 
 def ragapp(question):
-    info_prompt_template = PromptTemplate.from_template("""
-    You are an expert on the game SCP: Secret Laboratory. Answer the following question based on the game:
-
-    Question: {question}
-    Answer:
-    """)
 
     openai_api_key = os.getenv('OPENAI_API_KEY')
-    llm = OpenAIChatLLM(api_key=openai_api_key)
     memory = ConversationBufferMemory()
     tools = [
         Tool(
@@ -119,9 +111,14 @@ def ragapp(question):
         ),
     ]
 
+
+    def llmcall(prompt):
+        api_key = os.getenv('OPENAI_API_KEY')
+        return gpt4o(api_key=api_key, prompt=prompt)
+
     agent = initialize_agent(
         tools=tools,
-        llm=llm.call,
+        llm=llmcall,
         agent_type="zero-shot-react-description",
         memory=memory,
         handle_parsing_errors=True,
