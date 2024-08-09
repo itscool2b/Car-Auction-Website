@@ -15,7 +15,7 @@ import openai
 from .faiss_index import index, document_store
 from openai import OpenAI
 from .forms import ChatForm
-
+from .models import ChatSession
 load_dotenv()
 
 def loginpage(request):
@@ -55,17 +55,29 @@ def login(request):
     return render(request, 'login.html', {'form': form})
 
 #handling chats
+@login_required
+def create(request):
+    if request.method == 'POST':
+        name = request.POST.GET('name', 'New Chat')
+        chat_session = ChatSession.objects.create(user=request.user, name=name)
+        return redirect('home/', session_id=chat_session.id)
+    return render(request, 'dashboard.html')
 
 @login_required
-def handlingChats(request):
+def chats(request, session_id):
+    chat_session = get_object_or_404(ChatSession, id=session_id, user=request.user)
     if request.method == 'POST':
-        form = ChatForm(request,data=request.POST)
+        form = ChatForm(request.POST)
         if form.is_valid():
-            form.save()
-    
+            chat = form.save(commit=False)
+            chat.session = chat_session
+            chat.save()
+        return redirect('home/', session_id=chat_session.id)
     else:
         form = ChatForm()
-    return render(request,'dashboard.html', {'form': form})
+    chats = chat_session.chats.order_by('created_at')
+
+    return render(request, 'chat_session.html', {'form': form, 'chats': chats, 'chat_session': chat_session})
 
 def gpt4o(api_key, prompt, model='gpt-4o', **kwargs):
     openai.api_key = api_key

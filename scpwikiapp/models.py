@@ -8,11 +8,18 @@ from .faiss_index import index, document_store, add_documents_to_faiss
 
 #need to handle chat
 
-
+class ChatSession(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+    def __str__ (self):
+        return self.name
+    
 class Chats(models.Model):
+    session = models.ForeignKey(ChatSession, related_name='chats', on_delete=models.CASCADE)
     url = models.URLField(length=200)
     text = models.TextField(max_length=255)
-    
+    created_at = models.DateTimeField(auto_now_add=True)
 
 class PDFDocument(models.Model):
     title = models.CharField(max_length=255)

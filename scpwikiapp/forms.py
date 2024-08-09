@@ -1,5 +1,5 @@
 from django import forms
-from .models import PDFDocument
+from .models import PDFDocument, Chats
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.forms import AuthenticationForm
@@ -22,7 +22,12 @@ class SignUpForm(forms.ModelForm):
         if commit:
             user.save()
         return user
-
+    
+    class ChatForm(forms.ModelForm):
+        
+        class Meta:
+            model = Chats
+            fields = ['url', 'text']
 
     
 
