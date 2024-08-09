@@ -14,6 +14,7 @@ from langchain.agents import Tool, initialize_agent
 import openai
 from .faiss_index import index, document_store
 from openai import OpenAI
+from .forms import ChatForm
 
 load_dotenv()
 
@@ -47,32 +48,24 @@ def login(request):
             user = authenticate(username=username, password=password)
             if user is not None:
                 auth_login(request, user)
-                return redirect('home')
+                return redirect('home/')
     else:
         form = CustomLoginForm()
     
     return render(request, 'login.html', {'form': form})
 
-@login_required
-def start_chat_session(request):
-    session_id = str(uuid.uuid4())
-    ChatSession.objects.create(session_id=session_id, user=request.user)
-    all_chats = ChatSession.objects.all()
-    return render(request, 'dashboard.html', {'session_id': session_id, 'all': all_chats})
+#handling chats
 
 @login_required
-def handle_chat(request, session_id):
-    chat_session = get_object_or_404(ChatSession, session_id=session_id)
-
+def handlingChats(request):
     if request.method == 'POST':
-        user_message = request.POST.get('message', '')
-        if user_message:
-            ChatMessage.objects.create(session=chat_session, sender='user', message=user_message)
-            response = ragapp(user_message)
-            ChatMessage.objects.create(session=chat_session, sender='bot', message=response)
-            return redirect('chat', session_id=session_id)
-    return render(request, 'chat.html', {'session_id': session_id, 'messages': chat_session.messages.all()})
-
+        form = ChatForm(request,data=request.POST)
+        if form.is_valid():
+            form.save()
+    
+    else:
+        form = ChatForm()
+    return render(request,'dashboard.html', {'form': form})
 
 def gpt4o(api_key, prompt, model='gpt-4o', **kwargs):
     openai.api_key = api_key

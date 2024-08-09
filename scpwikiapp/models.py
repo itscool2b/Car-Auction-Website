@@ -6,22 +6,12 @@ from langchain.embeddings import OpenAIEmbeddings
 import os
 from .faiss_index import index, document_store, add_documents_to_faiss
 
-class ChatSession(models.Model):
-    session_id = models.CharField(max_length=255, unique=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
+#need to handle chat
 
-    def __str__(self):
-        return f"{self.user.username} - {self.session_id}"
 
-class ChatMessage(models.Model):
-    session = models.ForeignKey(ChatSession, related_name='messages', on_delete=models.CASCADE)
-    sender = models.CharField(max_length=255)
-    message = models.TextField()
-    timestamp = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.sender}: {self.message[:50]}"
+class Chats(models.Model):
+    url = models.URLField(length=200)
+    text = models.TextField(max_length=255)
     
 
 class PDFDocument(models.Model):
