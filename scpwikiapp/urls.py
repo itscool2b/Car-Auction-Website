@@ -8,7 +8,7 @@ from django.conf.urls.static import static
 urlpatterns = [
 path('', views.login, name='login'),
 path('signup/', views.signup, name='signup'),
-#path('home/', views.home)
+path('home/', views.start_chat_session, name='start')
 
 ]
 if settings.DEBUG:

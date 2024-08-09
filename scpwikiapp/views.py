@@ -57,7 +57,8 @@ def login(request):
 def start_chat_session(request):
     session_id = str(uuid.uuid4())
     ChatSession.objects.create(session_id=session_id, user=request.user)
-    return redirect('chat', session_id=session_id)
+    all_chats = ChatSession.objects.all()
+    return render(request, 'dashboard.html', {'session_id': session_id, 'all': all_chats})
 
 @login_required
 def handle_chat(request, session_id):
@@ -92,7 +93,7 @@ def get_relevant_documents(query):
 
     openai_api_key = os.getenv('OPENAI_API_KEY')
     embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
-    query_embedding = embeddings.embed_query(query).reshape(1, -1)
+    query_embedding = embeddings.embed_query(query)
 
     D, I = index.search(query_embedding, k=5)
     results = [document_store[i] for i in I[0]]
@@ -107,7 +108,7 @@ def ragapp(question):
         Tool(
             name="InformationProvider",
             func=lambda query: get_relevant_documents(query),
-            description="Use this tool to retrieve detailed information about SCP: Secret Laboratory."
+            description="Use this tool to retrieve detailed information about STEAM foundation"
         ),
     ]
 

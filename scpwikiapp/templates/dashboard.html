@@ -117,12 +117,14 @@
             <div class="sidebar-header">
                 <h2>Chats</h2>
             </div>
+            {%for chat in all_chats%}
             <div class="chat-list">
-                <div class="chat-item">Chat 1</div>
-                <div class="chat-item">Chat 2</div>
-                <div class="chat-item">Chat 3</div>
-                <div class="chat-item">Chat 4</div>
+                
+                <div class="chat-item">{{chat.session_id}}</div>
+                
             </div>
+            {% endfor %}
+
         </div>
         <div class="main-content">
             <div class="chat-header">
