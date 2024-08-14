@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login as auth_login, authenticate
 from django.contrib.auth.decorators import login_required
-from .models import ChatSession, ChatMessage, PDFDocument
+from .models import PDFDocument
 from .forms import SignUpForm, CustomLoginForm
 from langchain_community.chat_models import ChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
@@ -14,7 +14,7 @@ from langchain.agents import Tool, initialize_agent
 import openai
 from .faiss_index import index, document_store
 from openai import OpenAI
-from .forms import ChatForm
+
 from .models import ChatSession
 load_dotenv()
 

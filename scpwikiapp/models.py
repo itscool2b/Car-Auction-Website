@@ -17,7 +17,7 @@ class ChatSession(models.Model):
     
 class Chats(models.Model):
     session = models.ForeignKey(ChatSession, related_name='chats', on_delete=models.CASCADE)
-    url = models.URLField(length=200)
+    url = models.URLField(max_length=200)
     text = models.TextField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
 
